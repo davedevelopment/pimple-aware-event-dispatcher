@@ -1,0 +1,19 @@
+{
+    "name": "davedevelopment/pimple-aware-event-dispatcher",
+    "description": "A Symfony compatible event dispatcher that allows services to be lazy loaded from an instance of the Pimple DI container",
+    "authors": [
+        {
+            "name": "Dave Marshall",
+            "email": "dave.marshall@atstsolutions.co.uk"
+        }
+    ],
+    "require": {
+        "pimple/pimple": "1.*",
+        "symfony/event-dispatcher": "2.1.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "PimpleAwareEventDispatcher": "src/"
+        }
+    }
+}
