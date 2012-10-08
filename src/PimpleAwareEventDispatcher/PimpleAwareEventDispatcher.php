@@ -44,7 +44,7 @@ class PimpleAwareEventDispatcher extends EventDispatcher
      */
     public function setContainer(Pimple $container)
     {
-        $this->container = $pimple;
+        $this->container = $container;
     }
 
     /**
