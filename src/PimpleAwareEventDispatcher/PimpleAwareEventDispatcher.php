@@ -22,18 +22,29 @@ use Pimple;
  */
 class PimpleAwareEventDispatcher extends EventDispatcher
 {
-    protected $app;
+    protected $container;
 
     protected $listenerIds = array();
 
     /**
      * Constructor.
      *
-     * @param Pimple $app
+     * @param Pimple $container
      */
-    public function __construct(Pimple $app)
+    public function __construct(Pimple $container = null)
     {
-        $this->app = $app;
+        $this->container = $container !== null ? $container : new Pimple();
+    }
+
+    /**
+     * Set container
+     *
+     * @param Pimple $container
+     * @return PimpleAwareEventDispatcher
+     */
+    public function setContainer(Pimple $container)
+    {
+        $this->container = $pimple;
     }
 
     /**
@@ -54,9 +65,9 @@ class PimpleAwareEventDispatcher extends EventDispatcher
 
         $serviceId = $callback[0];
         $method = $callback[1];
-        $app = $this->app;
-        $closure = function(Event $e) use ($app, $serviceId, $method) {
-            call_user_func(array($app[$serviceId], $method), $e);
+        $container = $this->container;
+        $closure = function(Event $e) use ($container, $serviceId, $method) {
+            call_user_func(array($container[$serviceId], $method), $e);
         };
 
         $this->listenerIds[$eventName][] = array($callback, $closure);
