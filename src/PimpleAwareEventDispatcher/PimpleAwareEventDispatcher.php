@@ -94,7 +94,8 @@ class PimpleAwareEventDispatcher extends EventDispatcher
      */
     public function addSubscriberService($serviceId, $class)
     {
-        if (!is_subclass_of($class, 'Symfony\Component\EventDispatcher\EventSubscriberInterface')) {
+        $rfc = new \ReflectionClass($class);
+        if (!$rfc->implementsInterface('Symfony\Component\EventDispatcher\EventSubscriberInterface')) {
             throw new \InvalidArgumentException(
                 "$class must implement Symfony\Component\EventDispatcher\EventSubscriberInterface"
             );
