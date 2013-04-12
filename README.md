@@ -16,16 +16,17 @@ To use in a [Silex](http://silex.sensiolabs.org) application:
 ``` php
 <?php
 
+use PimpleAwareEventDispatcher\PimpleAwareEventDispatcher;
 use Silex\Application;
 
 $app = new Application;
 
 // override the dispatcher
-$app['dispatcher_class'] = "PimpleAwareEventDispatcher\PimpleAwareEventDispatcher";
-$app['dispatcher']->extend('dispatcher', function($dispatcher) use ($app) {
-    $dispatcher->setContainer($app);
-    return $dispatcher;
-});
+$app['dispatcher'] = $app['pimple_aware_dispatcher'] = $app->share(
+    $app->extend('dispatcher', function($dispatcher) use ($app) {
+        return new PimpleContainerAwareEventDispatcher($dispatcher, $app);
+    }
+));
 
 // define our application services
 $app['some.service'] = $app->share(function() use ($app) {
@@ -36,7 +37,9 @@ $app['some.service'] = $app->share(function() use ($app) {
 });
 
 // add a listener, that will lazily fetch the service when needed
-$app['dispatcher']->addListenerService("some.event", array("some.service", "serviceMethod"));
-
+$app['pimple_aware_dispatcher']->addListenerService(
+    "some.event",
+    array("some.service", "serviceMethod")
+);
 ```
 

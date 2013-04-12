@@ -14,6 +14,7 @@ namespace PimpleAwareEventDispatcher\Test;
 use Pimple;
 use PimpleAwareEventDispatcher\PimpleAwareEventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -29,7 +30,8 @@ class PimpleAwareEventDispatcherTest extends \PHPUnit_Framework_TestCase
         $this->container['foo.service'] = $this->container->share(function() {
             return new FooService;
         });
-        $this->dispatcher = new PimpleAwareEventDispatcher($this->container);
+        $dispatcher = new EventDispatcher;
+        $this->dispatcher = new PimpleAwareEventDispatcher($dispatcher, $this->container);
     }
 
     /**
