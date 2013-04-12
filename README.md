@@ -24,7 +24,7 @@ $app = new Application;
 // override the dispatcher
 $app['dispatcher'] = $app['pimple_aware_dispatcher'] = $app->share(
     $app->extend('dispatcher', function($dispatcher) use ($app) {
-        return new PimpleContainerAwareEventDispatcher($dispatcher, $app);
+        return new PimpleAwareEventDispatcher($dispatcher, $app);
     }
 ));
 
