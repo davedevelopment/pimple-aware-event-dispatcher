@@ -119,6 +119,28 @@ class PimpleAwareEventDispatcher implements EventDispatcherInterface
         }
     }
 
+    public function removeSubscriberService($serviceId, $class)
+    {
+        $rfc = new \ReflectionClass($class);
+        if (!$rfc->implementsInterface('Symfony\Component\EventDispatcher\EventSubscriberInterface')) {
+            throw new \InvalidArgumentException(
+                "$class must implement Symfony\Component\EventDispatcher\EventSubscriberInterface"
+            );
+        }
+
+        foreach ($class::getSubscribedEvents() as $eventName => $params) {
+            if (is_string($params)) {
+                $this->removeListener($eventName, array($serviceId, $params));
+            } elseif (is_string($params[0])) {
+                $this->removeListener($eventName, array($serviceId, $params[0]));
+            } else {
+                foreach ($params as $listener) {
+                    $this->removeListener($eventName, array($serviceId, $listener[0]));
+                }
+            }
+        }
+    }
+
     /**
      * {@inheritdocs}
      */
@@ -148,7 +170,7 @@ class PimpleAwareEventDispatcher implements EventDispatcherInterface
      */
     public function removeSubscriber(EventSubscriberInterface $subscriber)
     {
-        return $this->removeSubscriber($subscriber);
+        return $this->eventDispatcher->removeSubscriber($subscriber);
     }
 
     /**
@@ -156,7 +178,7 @@ class PimpleAwareEventDispatcher implements EventDispatcherInterface
      */
     public function getListeners($eventName = null)
     {
-        return $this->getListeners($eventName);
+        return $this->eventDispatcher->getListeners($eventName);
     }
 
     /**
@@ -164,6 +186,6 @@ class PimpleAwareEventDispatcher implements EventDispatcherInterface
      */
     public function hasListeners($eventName = null)
     {
-        return $this->hasListeners($eventName);
+        return $this->eventDispatcher->hasListeners($eventName);
     }
 }
