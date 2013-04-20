@@ -50,6 +50,13 @@ class PimpleAwareEventDispatcherTest extends \PHPUnit_Framework_TestCase
         $this->dispatcher->addListenerService('foo', array('onBar'));
     }
 
+    public function testAddListener()
+    {
+        $this->dispatcher->addListener('foo', array($this->container['foo.service'], 'onFoo'));
+        $this->dispatcher->dispatch('foo', new Event());
+        $this->assertEquals("foo", $this->container['foo.service']->string);
+    }
+
     public function testAddListenerService()
     {
         $this->dispatcher->addListenerService('foo', array('foo.service', 'onFoo'), 5);
@@ -75,7 +82,6 @@ class PimpleAwareEventDispatcherTest extends \PHPUnit_Framework_TestCase
         $this->dispatcher->addSubscriberService('foo.service', 'stdClass');
     }
 
-
     public function testAddSubscriberService()
     {
         $this->dispatcher->addSubscriberService('foo.service', 'PimpleAwareEventDispatcher\Test\FooService');
@@ -87,6 +93,67 @@ class PimpleAwareEventDispatcherTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("foobar2bar1buzz", $this->container['foo.service']->string);
     }
 
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testRemoveSubscriberThrowsIfClassNotImplementEventSubscriberInterface()
+    {
+        $this->dispatcher->removeSubscriberService('foo.service', 'stdClass');
+    }
+
+    public function testRemoveSubscriberService()
+    {
+        $this->dispatcher->addSubscriberService('foo.service', 'PimpleAwareEventDispatcher\Test\FooService');
+        $this->assertTrue($this->dispatcher->hasListeners('foo'));
+        $this->assertTrue($this->dispatcher->hasListeners('bar'));
+        $this->assertTrue($this->dispatcher->hasListeners('buzz'));
+        $this->dispatcher->removeSubscriberService('foo.service', 'PimpleAwareEventDispatcher\Test\FooService');
+        $this->assertFalse($this->dispatcher->hasListeners('foo'));
+        $this->assertFalse($this->dispatcher->hasListeners('bar'));
+        $this->assertFalse($this->dispatcher->hasListeners('buzz'));
+    }
+
+    public function testAddSubscriber()
+    {
+        $this->dispatcher->addSubscriber($this->container['foo.service']);
+        $this->dispatcher->dispatch('foo', new Event());
+        $this->assertEquals("foo", $this->container['foo.service']->string);
+        $this->dispatcher->dispatch('bar', new Event());
+        $this->assertEquals("foobar2bar1", $this->container['foo.service']->string);
+        $this->dispatcher->dispatch('buzz', new Event());
+        $this->assertEquals("foobar2bar1buzz", $this->container['foo.service']->string);
+    }
+
+    public function testRemoveSubscriber()
+    {
+        $this->dispatcher->addSubscriber($this->container['foo.service']);
+        $this->assertTrue($this->dispatcher->hasListeners('foo'));
+        $this->assertTrue($this->dispatcher->hasListeners('bar'));
+        $this->assertTrue($this->dispatcher->hasListeners('buzz'));
+        $this->dispatcher->removeSubscriber($this->container['foo.service']);
+        $this->assertFalse($this->dispatcher->hasListeners('foo'));
+        $this->assertFalse($this->dispatcher->hasListeners('bar'));
+        $this->assertFalse($this->dispatcher->hasListeners('buzz'));
+    }
+
+    public function testGetListeners()
+    {
+        $this->dispatcher->addSubscriberService('foo.service', 'PimpleAwareEventDispatcher\Test\FooService');
+        $this->assertEquals(2, count($this->dispatcher->getListeners('bar')));
+        $this->assertEquals(3, count($this->dispatcher->getListeners()));
+    }
+
+    public function testSetContainer()
+    {
+        $container = new Pimple;
+        $container['bar.service'] = $container->share(function() {
+            return new FooService;
+        });
+        $this->dispatcher->setContainer($container);
+        $this->dispatcher->addListenerService('foo', array('bar.service', 'onFoo'), 5);
+        $this->dispatcher->dispatch('foo', new Event());
+        $this->assertEquals("foo", $container['bar.service']->string);
+    }
 }
 
 class FooService implements EventSubscriberInterface
