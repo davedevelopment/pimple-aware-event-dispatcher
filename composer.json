@@ -5,10 +5,14 @@
         {
             "name": "Dave Marshall",
             "email": "dave.marshall@atstsolutions.co.uk"
-        }
+        },
+		{
+			"name": "Dmitriy Konev",
+			"email": "dnkonev@yandex.ru"
+		}
     ],
     "require": {
-        "pimple/pimple": "1.*",
+        "pimple/pimple": "3.*",
         "symfony/event-dispatcher": "~2.1"
     },
     "require-dev": {
@@ -21,7 +25,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.0.x-dev"
+            "dev-master": "3.0.x-dev"
         }
     }
 }

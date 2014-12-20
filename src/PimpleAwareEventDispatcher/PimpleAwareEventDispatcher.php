@@ -11,7 +11,7 @@
 
 namespace PimpleAwareEventDispatcher;
 
-use Pimple;
+use Pimple\Container;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -33,20 +33,20 @@ class PimpleAwareEventDispatcher implements EventDispatcherInterface
      * Constructor.
      *
      * @param EventDispatcherInterface $eventDispatcher
-     * @param Pimple                   $container
+     * @param Container                   $container
      */
-    public function __construct(EventDispatcherInterface $eventDispatcher, Pimple $container = null)
+    public function __construct(EventDispatcherInterface $eventDispatcher, Container $container = null)
     {
         $this->eventDispatcher = $eventDispatcher;
-        $this->container = $container !== null ? $container : new Pimple();
+        $this->container = $container !== null ? $container : new Container();
     }
 
     /**
      * Set container
      *
-     * @param Pimple $container
+     * @param Container $container
      */
-    public function setContainer(Pimple $container)
+    public function setContainer(Container $container)
     {
         $this->container = $container;
     }
