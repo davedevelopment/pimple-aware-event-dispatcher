@@ -5,11 +5,7 @@
         {
             "name": "Dave Marshall",
             "email": "dave.marshall@atstsolutions.co.uk"
-        },
-		{
-			"name": "Dmitriy Konev",
-			"email": "dnkonev@yandex.ru"
-		}
+        }
     ],
     "require": {
         "pimple/pimple": "3.*",
