@@ -76,15 +76,15 @@ class PimpleAwareEventDispatcher extends EventDispatcher
 
     public function removeListener($eventName, $listener)
     {
-		if (isset($this->listenerIds[$eventName])) {
-			foreach ($this->listenerIds[$eventName] as $i => $parts) {
-				list($callback, $closure) = $parts;
-				if ($listener == $callback) {
-					$listener = $closure;
-					break;
-				}
-			}
-		}
+        if (isset($this->listenerIds[$eventName])) {
+            foreach ($this->listenerIds[$eventName] as $i => $parts) {
+                list($callback, $closure) = $parts;
+                if ($listener == $callback) {
+                    $listener = $closure;
+                    break;
+                }
+            }
+        }
 
         parent::removeListener($eventName, $listener);
     }
