@@ -11,17 +11,20 @@
 
 namespace PimpleAwareEventDispatcher;
 
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\EventDispatcher\Event;
 use Pimple;
+use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Wraps listeners in closures to allow lazy loading of services
  *
  * @author Dave Marshall <dave@atstsolutions.co.uk>
  */
-class PimpleAwareEventDispatcher extends EventDispatcher
+class PimpleAwareEventDispatcher implements EventDispatcherInterface
 {
+    protected $eventDispatcher;
+
     protected $container;
 
     protected $listenerIds = array();
@@ -29,10 +32,12 @@ class PimpleAwareEventDispatcher extends EventDispatcher
     /**
      * Constructor.
      *
-     * @param Pimple $container
+     * @param EventDispatcherInterface $eventDispatcher
+     * @param Pimple                   $container
      */
-    public function __construct(Pimple $container = null)
+    public function __construct(EventDispatcherInterface $eventDispatcher, Pimple $container = null)
     {
+        $this->eventDispatcher = $eventDispatcher;
         $this->container = $container !== null ? $container : new Pimple();
     }
 
@@ -40,7 +45,6 @@ class PimpleAwareEventDispatcher extends EventDispatcher
      * Set container
      *
      * @param Pimple $container
-     * @return PimpleAwareEventDispatcher
      */
     public function setContainer(Pimple $container)
     {
@@ -66,12 +70,12 @@ class PimpleAwareEventDispatcher extends EventDispatcher
         $serviceId = $callback[0];
         $method = $callback[1];
         $container = $this->container;
-        $closure = function(Event $e) use ($container, $serviceId, $method) {
+        $closure = function (Event $e) use ($container, $serviceId, $method) {
             call_user_func(array($container[$serviceId], $method), $e);
         };
 
         $this->listenerIds[$eventName][] = array($callback, $closure);
-        $this->addListener($eventName, $closure, $priority);
+        $this->eventDispatcher->addListener($eventName, $closure, $priority);
     }
 
     public function removeListener($eventName, $listener)
@@ -86,7 +90,7 @@ class PimpleAwareEventDispatcher extends EventDispatcher
             }
         }
 
-        parent::removeListener($eventName, $listener);
+        $this->eventDispatcher->removeListener($eventName, $listener);
     }
 
     /**
@@ -115,6 +119,75 @@ class PimpleAwareEventDispatcher extends EventDispatcher
                 }
             }
         }
+    }
 
+    public function removeSubscriberService($serviceId, $class)
+    {
+        $rfc = new \ReflectionClass($class);
+        if (!$rfc->implementsInterface('Symfony\Component\EventDispatcher\EventSubscriberInterface')) {
+            throw new \InvalidArgumentException(
+                "$class must implement Symfony\Component\EventDispatcher\EventSubscriberInterface"
+            );
+        }
+
+        foreach ($class::getSubscribedEvents() as $eventName => $params) {
+            if (is_string($params)) {
+                $this->removeListener($eventName, array($serviceId, $params));
+            } elseif (is_string($params[0])) {
+                $this->removeListener($eventName, array($serviceId, $params[0]));
+            } else {
+                foreach ($params as $listener) {
+                    $this->removeListener($eventName, array($serviceId, $listener[0]));
+                }
+            }
+        }
+    }
+
+    /**
+     * {@inheritdocs}
+     */
+    public function dispatch($eventName, Event $event = null)
+    {
+        return $this->eventDispatcher->dispatch($eventName, $event);
+    }
+
+    /**
+     * {@inheritdocs}
+     */
+    public function addListener($eventName, $listener, $priority = 0)
+    {
+        return $this->eventDispatcher->addListener($eventName, $listener, $priority);
+    }
+
+    /**
+     * {@inheritdocs}
+     */
+    public function addSubscriber(EventSubscriberInterface $subscriber)
+    {
+        return $this->eventDispatcher->addSubscriber($subscriber);
+    }
+
+    /**
+     * {@inheritdocs}
+     */
+    public function removeSubscriber(EventSubscriberInterface $subscriber)
+    {
+        return $this->eventDispatcher->removeSubscriber($subscriber);
+    }
+
+    /**
+     * {@inheritdocs}
+     */
+    public function getListeners($eventName = null)
+    {
+        return $this->eventDispatcher->getListeners($eventName);
+    }
+
+    /**
+     * {@inheritdocs}
+     */
+    public function hasListeners($eventName = null)
+    {
+        return $this->eventDispatcher->hasListeners($eventName);
     }
 }
