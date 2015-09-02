@@ -80,11 +80,13 @@ class PimpleAwareEventDispatcher implements EventDispatcherInterface
 
     public function removeListener($eventName, $listener)
     {
-        foreach ($this->listenerIds[$eventName] as $i => $parts) {
-            list($callback, $closure) = $parts;
-            if ($listener == $callback) {
-                $listener = $closure;
-                break;
+        if (isset($this->listenerIds[$eventName])) {
+            foreach ($this->listenerIds[$eventName] as $i => $parts) {
+                list($callback, $closure) = $parts;
+                if ($listener == $callback) {
+                    $listener = $closure;
+                    break;
+                }
             }
         }
 
