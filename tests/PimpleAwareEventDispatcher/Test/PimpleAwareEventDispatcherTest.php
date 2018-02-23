@@ -11,7 +11,7 @@
 
 namespace PimpleAwareEventDispatcher\Test;
 
-use Pimple;
+use Pimple\Container;
 use PimpleAwareEventDispatcher\PimpleAwareEventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -24,12 +24,14 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class PimpleAwareEventDispatcherTest extends \PHPUnit_Framework_TestCase
 {
+    protected $container;
+
     public function setup()
     {
-        $this->container = new Pimple;
-        $this->container['foo.service'] = $this->container->share(function() {
+        $this->container = new Container();
+        $this->container['foo.service'] = function($c) {
             return new FooService;
-        });
+        };
         $dispatcher = new EventDispatcher;
         $this->dispatcher = new PimpleAwareEventDispatcher($dispatcher, $this->container);
     }
@@ -145,10 +147,10 @@ class PimpleAwareEventDispatcherTest extends \PHPUnit_Framework_TestCase
 
     public function testSetContainer()
     {
-        $container = new Pimple;
-        $container['bar.service'] = $container->share(function() {
+        $container = new Container();
+        $container['bar.service'] = function($c) {
             return new FooService;
-        });
+        };
         $this->dispatcher->setContainer($container);
         $this->dispatcher->addListenerService('foo', array('bar.service', 'onFoo'), 5);
         $this->dispatcher->dispatch('foo', new Event());
