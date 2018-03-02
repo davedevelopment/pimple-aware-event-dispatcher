@@ -186,6 +186,14 @@ class PimpleAwareEventDispatcher implements EventDispatcherInterface
     /**
      * {@inheritdocs}
      */
+    public function getListenerPriority($eventName, $listener)
+    {
+        return $this->eventDispatcher->getListenerPriority($eventName, $listener);
+    }
+
+    /**
+     * {@inheritdocs}
+     */
     public function hasListeners($eventName = null)
     {
         return $this->eventDispatcher->hasListeners($eventName);
